@@ -9,12 +9,13 @@ const PORT = 3001;
 // Middleware to parse request bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Route to serve the main page
+// Route to serve the main page (before static middleware to ensure it's hit)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // API endpoint to fetch and modify content
 app.post('/fetch', async (req, res) => {
@@ -31,21 +32,6 @@ app.post('/fetch', async (req, res) => {
 
     // Use cheerio to parse HTML and selectively replace text content, not URLs
     const $ = cheerio.load(html);
-    
-    // Function to replace text but skip URLs and attributes
-    function replaceYaleWithFale(i, el) {
-      if ($(el).children().length === 0 || $(el).text().trim() !== '') {
-        // Get the HTML content of the element
-        let content = $(el).html();
-        
-        // Only process if it's a text node
-        if (content && $(el).children().length === 0) {
-          // Replace Yale with Fale in text content only, preserving case
-          content = content.replace(/YALE/g, 'FALE').replace(/Yale/g, 'Fale').replace(/yale/g, 'fale');
-          $(el).html(content);
-        }
-      }
-    }
     
     // Function to replace Yale with Fale preserving case
     function replaceYalePreservingCase(text) {
@@ -89,6 +75,7 @@ app.post('/fetch', async (req, res) => {
 module.exports = app;
 
 // Start the server only if this file is run directly
+/* istanbul ignore next */
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Faleproxy server running at http://localhost:${PORT}`);
