@@ -40,11 +40,19 @@ app.post('/fetch', async (req, res) => {
         
         // Only process if it's a text node
         if (content && $(el).children().length === 0) {
-          // Replace Yale with Fale in text content only
-          content = content.replace(/Yale/g, 'Fale').replace(/yale/g, 'fale').replace(/YALE/g, 'FALE');
+          // Replace Yale with Fale in text content only, preserving case
+          content = content.replace(/YALE/g, 'FALE').replace(/Yale/g, 'Fale').replace(/yale/g, 'fale');
           $(el).html(content);
         }
       }
+    }
+    
+    // Function to replace Yale with Fale preserving case
+    function replaceYalePreservingCase(text) {
+      return text
+        .replace(/YALE/g, 'FALE')
+        .replace(/Yale/g, 'Fale')
+        .replace(/yale/g, 'fale');
     }
     
     // Process text nodes in the body
@@ -53,14 +61,14 @@ app.post('/fetch', async (req, res) => {
     }).each(function() {
       // Replace text content but not in URLs or attributes
       const text = $(this).text();
-      const newText = text.replace(/Yale/g, 'Fale').replace(/yale/g, 'fale').replace(/YALE/g, 'FALE');
+      const newText = replaceYalePreservingCase(text);
       if (text !== newText) {
         $(this).replaceWith(newText);
       }
     });
     
     // Process title separately
-    const title = $('title').text().replace(/Yale/g, 'Fale').replace(/yale/g, 'fale').replace(/YALE/g, 'FALE');;
+    const title = replaceYalePreservingCase($('title').text());
     $('title').text(title);
     
     return res.json({ 
@@ -77,7 +85,12 @@ app.post('/fetch', async (req, res) => {
   }
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Faleproxy server running at http://localhost:${PORT}`);
-});
+// Export app for testing
+module.exports = app;
+
+// Start the server only if this file is run directly
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Faleproxy server running at http://localhost:${PORT}`);
+  });
+}
