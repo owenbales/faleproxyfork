@@ -74,3 +74,4 @@ jobs:
       env:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       run: vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+
